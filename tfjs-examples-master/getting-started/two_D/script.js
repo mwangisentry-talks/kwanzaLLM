@@ -49,6 +49,7 @@ function createModel() {
   return model;
 }
 
-const model = tf.sequential();
-model.add(tf.layers.dense({inputShape: [1], units: 1, useBias: true}));
+// Create the model
+const model = createModel();
+tfvis.show.modelSummary({name: 'Model Summary'}, model);
 
