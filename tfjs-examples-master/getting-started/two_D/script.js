@@ -117,3 +117,12 @@ async function trainModel(model, inputs, labels) {
     )
   });
 }
+
+// Convert the data to a form we can use for training.
+const tensorData = convertToTensor(data);
+const {inputs, labels} = tensorData;
+
+// Train the model
+await trainModel(model, inputs, labels);
+console.log('Done Training');
+
