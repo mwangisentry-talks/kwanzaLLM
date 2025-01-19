@@ -16,6 +16,9 @@ function createModel() {
   const model = tf.sequential();
   model.add(tf.layers.dense({inputShape: [1], units: 1, useBias: true}));
   model.add(tf.layers.dense({units: 1, useBias: true}));
+ // model.add(tf.layers.dense({units: 50, activation: 'sigmoid'}));
+  model.add(tf.layers.dense({units: 50, activation: 'relu'}));
+
   return model;
 }
 
@@ -69,6 +72,44 @@ async function trainModel(model, inputs, labels) {
   });
 }
 
+function testModel(model, inputData, normalizationData) {
+  const {inputMax, inputMin, labelMin, labelMax} = normalizationData;
+
+  const [xs, preds] = tf.tidy(() => {
+    const xsNorm = tf.linspace(0, 1, 100);
+    const predictions = model.predict(xsNorm.reshape([100, 1]));
+
+    const unNormXs = xsNorm
+      .mul(inputMax.sub(inputMin))
+      .add(inputMin);
+
+    const unNormPreds = predictions
+      .mul(labelMax.sub(labelMin))
+      .add(labelMin);
+
+    return [unNormXs.dataSync(), unNormPreds.dataSync()];
+  });
+
+  const predictedPoints = Array.from(xs).map((val, i) => {
+    return {x: val, y: preds[i]};
+  });
+
+  const originalPoints = inputData.map(d => ({
+    x: d.horsepower,
+    y: d.mpg,
+  }));
+
+  tfvis.render.scatterplot(
+    {name: 'Model Predictions vs Original Data'},
+    {values: [originalPoints, predictedPoints], series: ['original', 'predicted']},
+    {
+      xLabel: 'Horsepower',
+      yLabel: 'MPG',
+      height: 300,
+    }
+  );
+}
+
 async function run() {
   const data = await getData();
   const values = data.map(d => ({
@@ -82,7 +123,7 @@ async function run() {
     {
       xLabel: 'Horsepower',
       yLabel: 'MPG',
-      height: 300
+      height: 300,
     }
   );
 
@@ -94,54 +135,8 @@ async function run() {
 
   await trainModel(model, inputs, labels);
   console.log('Done Training');
+
+  testModel(model, data, tensorData); // Test the model after training
 }
 
 document.addEventListener('DOMContentLoaded', run);
-
-function testModel(model, inputData, normalizationData) {
-  const {inputMax, inputMin, labelMin, labelMax} = normalizationData;
-
-  // Generate predictions for a uniform range of numbers between 0 and 1;
-  // We un-normalize the data by doing the inverse of the min-max scaling
-  // that we did earlier.
-  const [xs, preds] = tf.tidy(() => {
-
-    const xsNorm = tf.linspace(0, 1, 100);
-    const predictions = model.predict(xsNorm.reshape([100, 1]));
-
-    const unNormXs = xsNorm
-      .mul(inputMax.sub(inputMin))
-      .add(inputMin);
-
-    const unNormPreds = predictions
-      .mul(labelMax.sub(labelMin))
-      .add(labelMin);
-
-    // Un-normalize the data
-    return [unNormXs.dataSync(), unNormPreds.dataSync()];
-  });
-
-
-  const predictedPoints = Array.from(xs).map((val, i) => {
-    return {x: val, y: preds[i]}
-  });
-
-  const originalPoints = inputData.map(d => ({
-    x: d.horsepower, y: d.mpg,
-  }));
-
-
-  tfvis.render.scatterplot(
-    {name: 'Model Predictions vs Original Data'},
-    {values: [originalPoints, predictedPoints], series: ['original', 'predicted']},
-    {
-      xLabel: 'Horsepower',
-      yLabel: 'MPG',
-      height: 300
-    }
-  );
-}
-
-// Make some predictions using the model and compare them to the
-// original data
-testModel(model, data, tensorData);
