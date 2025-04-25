@@ -39,7 +39,7 @@
 git clone https://github.com/mngugi/kwanzaLLM.git
 cd kwanzaLLM
 python train.py --config configs/small_transformer.yaml
-
+```
 📚 References
 - Attention Is All You Need (Vaswani et al.)
 
