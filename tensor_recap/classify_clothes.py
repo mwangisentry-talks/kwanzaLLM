@@ -23,4 +23,11 @@ print(f' Image Testing Data: {test_images.shape}')
 print(f' Image Testing Data: {test_labels.shape}')
 print(f' Image Training Labels: {train_labels}')
 
+class_names = ['T-shirt/top', 'Trouser', 'Pullover', 'Dress', 'Coat',
+               'Sandal', 'Shirt', 'Sneaker', 'Bag', 'Ankle boot']
+plt.figure()
+plt.imshow(train_images[0])
+plt.colorbar()
+plt.grid(False)
+plt.show()
 
