@@ -17,7 +17,7 @@ print(tf.__version__)
 
 fashion_mnist = tf.keras.datasets.fashion_mnist
 (train_images, train_labels), (test_images, test_labels) = fashion_mnist.load_data()
-print(train_images.shape)
+print(f' Image Training Data: {train_images.shape}')
 print(train_labels.shape)
 print(test_images.shape)
 print(test_labels.shape)
